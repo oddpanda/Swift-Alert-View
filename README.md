@@ -1,5 +1,5 @@
 <snippet>
-  <content><![CDATA[
+  <content>
 # Swift-Alert-View
 TODO: Write a project description
 ## Installation
