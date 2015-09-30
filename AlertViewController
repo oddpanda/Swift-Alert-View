@@ -1,0 +1,329 @@
+//
+//  AlertViewController.swift
+//  VisitsToDo
+//
+//  Created by Shaun Gillon on 21/09/2015.
+//  Copyright © 2015 Shaun Gillon. All rights reserved.
+//
+// Version 0.1
+
+import UIKit
+
+class AlertViewController: UIViewController {
+
+    var containerView:UIView!
+    var circleView:UIView!
+    var alertBackgroundView:UIView!
+    
+    var actionButton:UIButton!
+    var cancelButton:UIButton?
+
+    
+    var titleLabel:UILabel!
+    var textView:UITextView!
+    
+    var iconImage:UIImage!
+    var iconImageView:UIImageView!
+    weak var rootViewController:UIViewController!
+    
+    var viewWidth:CGFloat?
+    var viewHeight:CGFloat?
+    
+    let baseHeight:CGFloat = 160.0
+    var alertWidth:CGFloat = 290.0
+    let buttonHeight:CGFloat = 50.0
+    let padding:CGFloat = 15.0
+    var isAlertOpen:Bool = false
+    
+    required init(coder aDecoder: NSCoder) {
+        fatalError("NSCoding not supported")
+    }
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?) {
+        super.init(nibName:nibNameOrNil, bundle:nibBundleOrNil)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        let size = self.screenSize()
+        self.viewWidth = size.width
+        self.viewHeight = size.height
+        
+        var yPos:CGFloat = 0.0
+        let contentWidth:CGFloat = self.alertWidth - (self.padding*2)
+        
+        // position the icon image view, if there is one
+        if self.iconImageView != nil {
+            
+            yPos += iconImageView.frame.height/2
+            let centerX = (self.alertWidth-self.iconImageView.frame.width)/2
+            let centerXCircle = (self.alertWidth-self.circleView.frame.width)/2
+            
+            self.iconImageView.frame.origin = CGPoint(x: centerX, y: -iconImageView.frame.height/2)
+            self.circleView.frame.origin = CGPoint(x: centerXCircle, y: -circleView.frame.height/2)
+            
+            iconImageView.layer.cornerRadius = self.iconImageView.frame.width/2
+            iconImageView.clipsToBounds = true
+            circleView.layer.cornerRadius = self.circleView.frame.width/2
+            circleView.clipsToBounds = true
+        }
+        
+        // position the title
+        let titleString = titleLabel.text! as NSString
+        let titleAttr = [NSFontAttributeName:titleLabel.font]
+        let titleSize = CGSize(width: contentWidth, height: 90)
+        let titleRect = titleString.boundingRectWithSize(titleSize, options: NSStringDrawingOptions.UsesLineFragmentOrigin, attributes: titleAttr, context: nil)
+        yPos += padding
+        self.titleLabel.frame = CGRect(x: self.padding, y: yPos, width: self.alertWidth - (self.padding*2), height: ceil(titleRect.size.height))
+        yPos += ceil(titleRect.size.height)
+        
+        // position text
+        if self.textView != nil {
+            let textString = textView.text! as NSString
+            let textAttr = [NSFontAttributeName: UIFont(name: "Lato-Regular", size: 14.0)!]
+            let realSize = textView.sizeThatFits(CGSizeMake(contentWidth, CGFloat.max))
+            let textSize = CGSize(width: contentWidth, height: CGFloat(fmaxf(Float(100.0), Float(realSize.height))))
+            let textRect = textString.boundingRectWithSize(textSize, options: NSStringDrawingOptions.UsesLineFragmentOrigin, attributes: textAttr, context: nil)
+            self.textView.frame = CGRect(x: self.padding, y: yPos, width: self.alertWidth - (self.padding*2), height: ceil(textRect.size.height)*2)
+            yPos += ceil(textRect.size.height) + padding
+        }
+        
+        // position the buttons
+        yPos += self.padding
+        
+        
+        var buttonWidth = self.alertWidth
+        if self.cancelButton != nil {
+            buttonWidth = self.alertWidth/2
+            self.cancelButton!.frame = CGRect(x: 0, y: yPos, width: buttonWidth, height: self.buttonHeight)
+            self.actionButton.frame = CGRect(x: buttonWidth, y: yPos, width: buttonWidth, height: self.buttonHeight)
+        } else if self.actionButton != nil {
+            self.actionButton.frame = CGRect(x: 0, y: yPos, width: buttonWidth, height: self.buttonHeight)
+        }
+        
+        yPos += self.buttonHeight
+        
+        // size the background view
+        self.alertBackgroundView.frame = CGRect(x: 0, y: 0, width: self.alertWidth, height: yPos)
+        
+        // size the container that holds everything together
+        self.containerView.frame = CGRect(x: (self.viewWidth!-self.alertWidth)/2, y: (self.viewHeight! - yPos)/2, width: self.alertWidth, height: yPos)
+    }
+
+
+    func show(viewController: UIViewController, title: String, text: String?=nil, buttonText: String?=nil, cancelButtonText: String?=nil, var color: UIColor?=nil, iconImage: UIImage?=nil) -> OPDAlertViewResponder {
+        
+        if(color == nil){
+           color = UIColor(red: 150.0/255, green: 205.0/255, blue: 219.0/255, alpha: 1.0)
+        }
+        
+        self.rootViewController = viewController
+        self.rootViewController.addChildViewController(self)
+        self.rootViewController.view.addSubview(view)
+        
+        self.view.backgroundColor = UIColor(red: 0.0/255, green: 0.0/255, blue: 0.0/255, alpha: 0.5)
+        
+        let baseColor:UIColor = UIColor.whiteColor()
+        let textColor = UIColor.darkGrayColor()
+        let modalColor = color!
+        
+        let sz = self.screenSize()
+        self.viewWidth = sz.width
+        self.viewHeight = sz.height
+        
+        self.view.frame.size = sz
+        
+        // Container for the entire alert modal contents
+        self.containerView = UIView()
+        self.view.addSubview(self.containerView!)
+        
+        // Background view/main color
+        self.alertBackgroundView = UIView()
+        alertBackgroundView.backgroundColor = baseColor
+        alertBackgroundView.layer.cornerRadius = 4
+        alertBackgroundView.layer.masksToBounds = true
+        self.containerView.addSubview(alertBackgroundView!)
+        
+        // Icon
+        self.iconImage = iconImage
+        if self.iconImage != nil {
+            
+            self.circleView = UIView()
+            circleView.backgroundColor = modalColor
+            circleView.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
+            circleView.layer.borderWidth = 3.0
+            circleView.layer.borderColor = baseColor.CGColor
+            self.containerView.addSubview(circleView!)
+            
+            self.iconImageView = UIImageView(image: self.iconImage)
+            self.containerView.addSubview(iconImageView)
+        }
+        
+        // Title
+        self.titleLabel = UILabel()
+        titleLabel.textColor = textColor
+        titleLabel.numberOfLines = 0
+        titleLabel.textAlignment = .Center
+        titleLabel.font = UIFont(name: "Lato-Regular", size: 18.0)
+        titleLabel.text = title
+        self.containerView.addSubview(titleLabel)
+        
+        // View text
+        if let text = text {
+            self.textView = UITextView()
+            self.textView.userInteractionEnabled = false
+            textView.editable = false
+            textView.textColor = textColor
+            textView.textAlignment = .Center
+            textView.font = UIFont(name: "Lato-Light", size: 14.0)
+            textView.backgroundColor = UIColor.clearColor()
+            textView.text = text
+            self.containerView.addSubview(textView)
+        }
+        
+        
+        // Button
+        self.actionButton = UIButton()
+        let buttonColor = UIImage.withColor(modalColor)
+        let buttonHighlightColor = UIImage.withColor(adjustBrightness(modalColor, amount: 0.9))
+        actionButton.setBackgroundImage(buttonColor, forState: .Normal)
+        actionButton.setBackgroundImage(buttonHighlightColor, forState: .Highlighted)
+        actionButton.addTarget(self, action: "closeView", forControlEvents: .TouchUpInside)
+        actionButton!.titleLabel!.font =  UIFont(name: "Lato-Light", size: 18)
+        alertBackgroundView!.addSubview(actionButton)
+        if let text = buttonText {
+            self.actionButton?.setTitle(text, forState: UIControlState.Normal)
+        } else {
+            self.actionButton?.setTitle("Ok", forState: UIControlState.Normal)
+        }
+        
+        if(cancelButtonText != nil){
+            // Button
+            let cancelColour = UIColor(red: 229.0/255, green: 124.0/255, blue: 141.0/255, alpha: 1.0)
+            self.cancelButton = UIButton()
+            let cancelbuttonColor = UIImage.withColor(cancelColour)
+            let cancelbuttonHighlightColor = UIImage.withColor(adjustBrightness(cancelColour, amount: 0.9))
+            cancelButton!.setBackgroundImage(cancelbuttonColor, forState: .Normal)
+            cancelButton!.setBackgroundImage(cancelbuttonHighlightColor, forState: .Highlighted)
+            cancelButton!.addTarget(self, action: "closeView", forControlEvents: .TouchUpInside)
+            alertBackgroundView!.addSubview(cancelButton!)
+            self.cancelButton?.setTitle(cancelButtonText, forState: UIControlState.Normal)
+            self.cancelButton!.titleLabel!.font =  UIFont(name: "Lato-Light", size: 18)
+
+        }
+        
+        // Animate it in
+        self.view.alpha = 0
+        UIView.animateWithDuration(0.2, animations: {
+            self.view.alpha = 1
+        })
+        
+        self.containerView.frame.origin.x = self.view.center.x
+        self.containerView.center.y = -500
+        UIView.animateWithDuration(0.7, delay: 0.05, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: [], animations: {
+            self.containerView.center = self.view.center
+            }, completion: { finished in
+                
+        })
+
+        return OPDAlertViewResponder(alertview: self)
+    }
+    
+    func closeView() {
+        UIView.animateWithDuration(0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: [], animations: {
+            self.containerView.center.y = self.view.center.y + self.viewHeight!
+            self.view.alpha = 0
+                    }, completion: { finished in
+                            self.removeView()
+        })
+    }
+    
+    func removeView() {
+        isAlertOpen = false
+        self.removeFromParentViewController()
+        self.view.removeFromSuperview()
+    }
+    
+    
+    // For any UIColor and brightness value where darker <1
+    // and lighter (>1) return an altered UIColor.
+    //
+    // See: http://a2apps.com.au/lighten-or-darken-a-uicolor/
+    func adjustBrightness(color:UIColor, amount:CGFloat) -> UIColor {
+        var hue:CGFloat = 0
+        var saturation:CGFloat = 0
+        var brightness:CGFloat = 0
+        var alpha:CGFloat = 0
+        if color.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            brightness += (amount-1.0)
+            brightness = max(min(brightness, 1.0), 0.0)
+            return UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha)
+        }
+        return color
+    }
+    
+    // Get Screen Size
+    //
+    //
+    func screenSize() -> CGSize {
+        let screenSize = UIScreen.mainScreen().bounds.size
+        if (NSFoundationVersionNumber <= NSFoundationVersionNumber_iOS_7_1) && UIInterfaceOrientationIsLandscape(UIApplication.sharedApplication().statusBarOrientation) {
+            return CGSizeMake(screenSize.height, screenSize.width)
+        }
+        return screenSize
+    }
+    
+    // Allow alerts to be closed/renamed in a chainable manner
+    class OPDAlertViewResponder {
+        
+        let alertview: AlertViewController
+        
+        init(alertview: AlertViewController) {
+            self.alertview = alertview
+        }
+        
+    }
+    
+    func setFont(fontStr: String) {
+
+    self.titleLabel.font = UIFont.systemFontOfSize(24)
+
+    self.textView.font = UIFont.systemFontOfSize(16)
+
+        // relayout to account for size changes
+        self.viewDidLayoutSubviews()
+    }
+}
+
+// Utility methods + extensions
+
+// Extend UIImage with a method to create
+// a UIImage from a solid color
+//
+// See: http://stackoverflow.com/questions/20300766/how-to-change-the-highlighted-color-of-a-uibutton
+extension UIImage {
+    class func withColor(color: UIColor) -> UIImage {
+        let rect = CGRectMake(0, 0, 1, 1)
+        UIGraphicsBeginImageContext(rect.size)
+        let context = UIGraphicsGetCurrentContext()
+        
+        CGContextSetFillColorWithColor(context, color.CGColor)
+        CGContextFillRect(context, rect)
+        
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image
+    }
+}
