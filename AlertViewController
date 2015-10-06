@@ -130,9 +130,15 @@ class AlertViewController: UIViewController {
            color = UIColor(red: 150.0/255, green: 205.0/255, blue: 219.0/255, alpha: 1.0)
         }
         
-        self.rootViewController = viewController.view.window!.rootViewController
-        self.rootViewController.addChildViewController(self)
-        self.rootViewController.view.addSubview(view)
+        if((viewController.navigationController) != nil){
+            self.rootViewController = viewController.navigationController
+            self.rootViewController.addChildViewController(self)
+            self.rootViewController.view.addSubview(view)
+        } else {
+            self.rootViewController = viewController.view.window!.rootViewController
+            self.rootViewController.addChildViewController(self)
+            self.rootViewController.view.addSubview(view)
+        }
         
         self.view.backgroundColor = UIColor(red: 0.0/255, green: 0.0/255, blue: 0.0/255, alpha: 0.5)
         
