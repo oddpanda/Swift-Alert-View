@@ -10,14 +10,14 @@
 import UIKit
 
 class AlertViewController: UIViewController {
-
+    
     var containerView:UIView!
     var circleView:UIView!
     var alertBackgroundView:UIView!
     
     var actionButton:UIButton!
     var cancelButton:UIButton?
-
+    
     
     var titleLabel:UILabel!
     var textView:UITextView!
@@ -45,17 +45,19 @@ class AlertViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
     override func viewDidLayoutSubviews() {
+        
         super.viewWillLayoutSubviews()
+        
         let size = self.screenSize()
         self.viewWidth = size.width
         self.viewHeight = size.height
@@ -91,17 +93,15 @@ class AlertViewController: UIViewController {
         // position text
         if self.textView != nil {
             let textString = textView.text! as NSString
-            let textAttr = [NSFontAttributeName: UIFont(name: "Lato-Regular", size: 14.0)!]
+            let textAttr = [NSFontAttributeName: UIFont(name: "AvenirNext-Medium", size: 14.0)!]
             let realSize = textView.sizeThatFits(CGSizeMake(contentWidth, CGFloat.max))
             let textSize = CGSize(width: contentWidth, height: CGFloat(fmaxf(Float(100.0), Float(realSize.height))))
             let textRect = textString.boundingRectWithSize(textSize, options: NSStringDrawingOptions.UsesLineFragmentOrigin, attributes: textAttr, context: nil)
             self.textView.frame = CGRect(x: self.padding, y: yPos, width: self.alertWidth - (self.padding*2), height: ceil(textRect.size.height)*2)
             yPos += ceil(textRect.size.height) + padding
         }
-        
         // position the buttons
         yPos += self.padding
-        
         
         var buttonWidth = self.alertWidth
         if self.cancelButton != nil {
@@ -120,15 +120,15 @@ class AlertViewController: UIViewController {
         // size the container that holds everything together
         self.containerView.frame = CGRect(x: (self.viewWidth!-self.alertWidth)/2, y: (self.viewHeight! - yPos)/2, width: self.alertWidth, height: yPos)
     }
-
-
+    
+    
     func show(viewController: UIViewController, title: String, text: String?=nil, buttonText: String?=nil, cancelButtonText: String?=nil,var color: UIColor?=nil, iconImage: UIImage?=nil) -> OPDAlertViewResponder {
         
         self.isAlertOpen = true
         
-        if(color == nil){
-           color = UIColor(red: 150.0/255, green: 205.0/255, blue: 219.0/255, alpha: 1.0)
-        }
+       // if(color == nil){
+            color = UIColor(red: 150.0/255, green: 205.0/255, blue: 219.0/255, alpha: 1.0)
+        //}
         
         if((viewController.navigationController) != nil){
             self.rootViewController = viewController.navigationController
@@ -183,7 +183,7 @@ class AlertViewController: UIViewController {
         titleLabel.textColor = textColor
         titleLabel.numberOfLines = 0
         titleLabel.textAlignment = .Center
-        titleLabel.font = UIFont(name: "Lato-Regular", size: 18.0)
+        titleLabel.font = UIFont(name: "AvenirNext-Medium", size: 18.0)
         titleLabel.text = title
         self.containerView.addSubview(titleLabel)
         
@@ -194,7 +194,7 @@ class AlertViewController: UIViewController {
             textView.editable = false
             textView.textColor = textColor
             textView.textAlignment = .Center
-            textView.font = UIFont(name: "Lato-Light", size: 14.0)
+            textView.font = UIFont(name: "AvenirNext-Medium", size: 14.0)
             textView.backgroundColor = UIColor.clearColor()
             textView.text = text
             self.containerView.addSubview(textView)
@@ -208,7 +208,7 @@ class AlertViewController: UIViewController {
         actionButton.setBackgroundImage(buttonColor, forState: .Normal)
         actionButton.setBackgroundImage(buttonHighlightColor, forState: .Highlighted)
         actionButton.addTarget(self, action: "closeView", forControlEvents: .TouchUpInside)
-        actionButton!.titleLabel!.font =  UIFont(name: "Lato-Light", size: 18)
+        actionButton!.titleLabel!.font =  UIFont(name: "AvenirNext-Medium", size: 18)
         alertBackgroundView!.addSubview(actionButton)
         if let text = buttonText {
             self.actionButton?.setTitle(text, forState: UIControlState.Normal)
@@ -227,8 +227,8 @@ class AlertViewController: UIViewController {
             cancelButton!.addTarget(self, action: "closeView", forControlEvents: .TouchUpInside)
             alertBackgroundView!.addSubview(cancelButton!)
             self.cancelButton?.setTitle(cancelButtonText, forState: UIControlState.Normal)
-            self.cancelButton!.titleLabel!.font =  UIFont(name: "Lato-Light", size: 18)
-
+            self.cancelButton!.titleLabel!.font =  UIFont(name: "AvenirNext-Medium", size: 18)
+            
         }
         
         // Animate it in
@@ -239,12 +239,13 @@ class AlertViewController: UIViewController {
         
         self.containerView.frame.origin.x = self.view.center.x
         self.containerView.center.y = -500
+        
         UIView.animateWithDuration(0.7, delay: 0.05, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.5, options: [], animations: {
             self.containerView.center = self.view.center
             }, completion: { finished in
                 
         })
-
+        
         return OPDAlertViewResponder(alertview: self)
     }
     
@@ -252,8 +253,8 @@ class AlertViewController: UIViewController {
         UIView.animateWithDuration(0.7, delay: 0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.5, options: [], animations: {
             self.containerView.center.y = self.view.center.y + self.viewHeight!
             self.view.alpha = 0
-                    }, completion: { finished in
-                            self.removeView()
+            }, completion: { finished in
+                self.removeView()
         })
     }
     
@@ -283,7 +284,6 @@ class AlertViewController: UIViewController {
     
     // Get Screen Size
     //
-    //
     func screenSize() -> CGSize {
         let screenSize = UIScreen.mainScreen().bounds.size
         if (NSFoundationVersionNumber <= NSFoundationVersionNumber_iOS_7_1) && UIInterfaceOrientationIsLandscape(UIApplication.sharedApplication().statusBarOrientation) {
@@ -304,11 +304,11 @@ class AlertViewController: UIViewController {
     }
     
     func setFont(fontStr: String) {
-
-    self.titleLabel.font = UIFont.systemFontOfSize(24)
-
-    self.textView.font = UIFont.systemFontOfSize(16)
-
+        
+        self.titleLabel.font = UIFont.systemFontOfSize(24)
+        
+        self.textView.font = UIFont.systemFontOfSize(16)
+        
         // relayout to account for size changes
         self.viewDidLayoutSubviews()
     }
